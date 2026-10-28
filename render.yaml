@@ -1,0 +1,57 @@
+services:
+  # 1. PostgreSQL Database
+  - type: pserv
+    name: garuda-db
+    env: docker
+    plan: free
+    dockerCommand: postgres:15
+    envVars:
+      - key: POSTGRES_USER
+        value: garuda
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: POSTGRES_DB
+        value: garuda
+
+  # 2. Redis Cache & Message Broker
+  - type: pserv
+    name: garuda-redis
+    env: docker
+    plan: free
+    dockerCommand: redis:7
+
+  # 3. FastAPI Web Service
+  - type: web
+    name: garuda-backend
+    env: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromService:
+          type: pserv
+          name: garuda-db
+          envVarKey: DATABASE_URL
+      - key: REDIS_URL
+        fromService:
+          type: pserv
+          name: garuda-redis
+          envVarKey: REDIS_URL
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: pserv
+          name: garuda-redis
+          envVarKey: REDIS_URL
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: pserv
+          name: garuda-redis
+          envVarKey: REDIS_URL
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false # You must set this manually in the Render dashboard!
+
+

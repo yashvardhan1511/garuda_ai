@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Replace the placeholder URL with your deployed domain before publishing.
+Sitemap: https://garuda-ai.vercel.app/sitemap.xml
